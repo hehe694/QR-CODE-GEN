@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GigaChad QR Studio v4.0 🧀👑</title>
+  <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #111827;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover: #1f293d;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.3);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); margin: 0; padding: 24px 16px; background-image: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.1) 0%, transparent 50%); }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+    .header p { color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; }
+
+    /* Main Grid Layout */
+    .app-container { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 24px; align-items: start; }
+    @media (max-width: 990px) { .app-container { grid-template-columns: 1fr; } }
+
+    /* Nav Tabs */
+    .tab-bar { display: flex; gap: 8px; background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); padding: 6px; border-radius: var(--radius); border: 1px solid var(--card-border); margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; color: var(--text-muted); font-weight: 700; border-radius: 10px; cursor: pointer; transition: 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
+    .tab-btn.active, .tab-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent-glow); }
+
+    /* Accordion Customization Panel */
+    .panel { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    
+    details.accordion { border-bottom: 1px solid var(--card-border); }
+    details.accordion:last-child { border-bottom: none; }
+    details.accordion summary { list-style: none; padding: 18px 20px; font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background 0.2s; }
+    details.accordion summary::-webkit-details-marker { display: none; }
+    details.accordion summary:hover { background: var(--card-hover); }
+    details.accordion[open] summary { border-bottom: 1px solid var(--card-border); background: rgba(56, 189, 248, 0.05); }
+    details.accordion summary::after { content: '\f078'; font-family: 'Font Awesome 6 Free'; font-size: 12px; transition: transform 0.2s; }
+    details.accordion[open] summary::after { transform: rotate(180deg); }
+
+    .accordion-content { padding: 20px; }
+
+    /* Controls & Inputs UI */
+    label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 12px 0 6px 0; display: flex; justify-content: space-between; }
+    label span.val-badge { color: var(--accent); font-weight: bold; }
+    input[type="text"], input[type="url"], input[type="tel"], input[type="email"], input[type="password"], textarea, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--card-border); background: #0b0f19; color: var(--text); font-size: 0.9rem; outline: none; transition: 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+    
+    .row-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; }
+    
+    /* Preset Themes Badges */
+    .presets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+    .preset-card { background: #0b0f19; border: 1px solid var(--card-border); padding: 10px; border-radius: 12px; text-align: center; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+    .preset-card:hover { border-color: var(--accent); transform: translateY(-2px); color: var(--accent); }
+
+    /* Quick Swatches */
+    .color-picker-wrapper { display: flex; align-items: center; gap: 8px; background: #0b0f19; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--card-border); }
+    .color-picker-wrapper input[type="color"] { border: none; background: none; width: 32px; height: 32px; cursor: pointer; border-radius: 6px; }
+
+    /* Brand Logo Grid */
+    .brand-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .brand-btn { background: #0b0f19; border: 1px solid var(--card-border); padding: 12px 6px; border-radius: 10px; cursor: pointer; text-align: center; font-size: 1.2rem; color: var(--text-muted); transition: 0.2s; }
+    .brand-btn:hover, .brand-btn.selected { border-color: var(--accent); color: var(--accent); background: var(--card-hover); }
+
+    /* Sticky Live Preview Card */
+    .preview-card { position: sticky; top: 24px; background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    
+    #frame-wrapper { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; border-radius: 20px; background: #ffffff; transition: all 0.2s; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin: 15px 0; }
+    .banner-text { font-weight: 900; color: #0b0f19; text-transform: uppercase; letter-spacing: 1.5px; line-height: 1.2; word-break: break-word; max-width: 260px; }
+
+    /* Action Buttons */
+    .btn { width: 100%; padding: 12px 18px; border-radius: 10px; font-weight: 800; border: none; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { opacity: 0.9; box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-1px); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--card-border); }
+    .btn-secondary:hover { background: var(--card-hover); border-color: var(--accent); }
+
+    .hidden { display: none !important; }
+    .checkbox-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; cursor: pointer; font-size: 0.85rem; font-weight: bold; color: var(--text); }
+    .checkbox-row input { width: 18px; height: 18px; accent-color: var(--accent); }
+    
+    /* Range Slider Styling */
+    input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: #0b0f19; border-radius: 5px; border: 1px solid var(--card-border); outline: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 10px var(--accent-glow); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>GigaChad QR Studio 👑</h1>
+  <p>The Ultimate Free, Ultra-Customizable QR Suite</p>
+</div>
+
+<div class="app-container">
+
+  <!-- LEFT: CONTROL CENTER -->
+  <div>
+    <!-- Navigation Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('single')"><i class="fa-solid fa-sliders"></i> Design Studio</button>
+      <button class="tab-btn" onclick="switchTab('batch')"><i class="fa-solid fa-layer-group"></i> Bulk Mode</button>
+      <button class="tab-btn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> History</button>
+    </div>
+
+    <!-- MAIN STUDIO PANEL -->
+    <div class="panel" id="tab-single">
+      
+      <!-- ACCORDION 1: PRESET THEMES -->
+      <details class="accordion" open>
+        <summary><i class="fa-solid fa-wand-magic-sparkles"></i> 1-Click Themes</summary>
+        <div class="accordion-content">
+          <div class="presets-grid">
+            <div class="preset-card" onclick="applyPreset('cyberpunk')">⚡ Cyberpunk</div>
+            <div class="preset-card" onclick="applyPreset('instagram')">🌅 Instagram</div>
+            <div class="preset-card" onclick="applyPreset('gold')">👑 Luxury Gold</div>
+            <div class="preset-card" onclick="applyPreset('spotify')">🟢 Spotify</div>
+            <div class="preset-card" onclick="applyPreset('stealth')">🥷 Stealth Dark</div>
+            <div class="preset-card" onclick="applyPreset('neon')">💖 Neon Pink</div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ACCORDION 2: PAYLOAD CONTENT -->
+      <details class="accordion" open>
+        <summary><i class="fa-solid fa-link"></i> Content & Data</summary>
+        <div class="accordion-content">
+          <label>Type</label>
+          <select id="qr-type" onchange="switchType()">
+            <option value="url">🔗 Website URL / Link</option>
+            <option value="wifi">📶 Wi-Fi Access Point</option>
+            <option value="vcard">🎴 Digital Contact (vCard)</option>
+            <option value="whatsapp">💬 WhatsApp Direct Link</option>
+            <option value="email">✉️ E-mail Draft</option>
+            <option value="text">📝 Raw Text</option>
+          </select>
+
+          <div id="field-url">
+            <label>Target URL</label>
+            <input type="url" id="url-val" placeholder="https://example.com" value="https://example.com" oninput="updateQR()">
+          </div>
+
+          <div id="field-wifi" class="hidden">
+            <label>Network Name (SSID)</label><input type="text" id="wifi-ssid" placeholder="MyWiFi" oninput="updateQR()">
+            <label>Password</label><input type="password" id="wifi-pass" placeholder="SecretPass" oninput="updateQR()">
+            <label>Security Type</label>
+            <select id="wifi-type" onchange="updateQR()"><option value="WPA">WPA/WPA2/WPA3</option><option value="WEP">WEP</option><option value="nopass">None</option></select>
+          </div>
+
+          <div id="field-vcard" class="hidden">
+            <div class="row-grid">
+              <div><label>First Name</label><input type="text" id="vc-fn" placeholder="Chad" oninput="updateQR()"></div>
+              <div><label>Last Name</label><input type="text" id="vc-ln" placeholder="Giga" oninput="updateQR()"></div>
+            </div>
+            <label>Phone Number</label><input type="tel" id="vc-tel" placeholder="+123456789" oninput="updateQR()">
+          </div>
+
+          <div id="field-whatsapp" class="hidden">
+            <label>Phone Number (With Country Code)</label><input type="tel" id="wa-phone" placeholder="15551234567" oninput="updateQR()">
+            <label>Message</label><input type="text" id="wa-msg" placeholder="Hey!" oninput="updateQR()">
+          </div>
+
+          <div id="field-email" class="hidden">
+            <label>Recipient Email</label><input type="email" id="em-to" placeholder="chad@example.com" oninput="updateQR()">
+            <label>Subject</label><input type="text" id="em-sub" placeholder="Inquiry" oninput="updateQR()">
+          </div>
+
+          <div id="field-text" class="hidden">
+            <label>Text Payload</label><textarea id="txt-val" placeholder="Type text here..." oninput="updateQR()"></textarea>
+          </div>
+        </div>
+      </details>
+
+      <!-- ACCORDION 3: GEOMETRY & STYLES -->
+      <details class="accordion">
+        <summary><i class="fa-solid fa-shapes"></i> QR Dots & Corner Eyes</summary>
+        <div class="accordion-content">
+          <div class="row-grid">
+            <div>
+              <label>Body Pattern</label>
+              <select id="dot-style" onchange="updateQR()">
+                <option value="rounded">Rounded</option>
+                <option value="dots">Dots</option>
+                <option value="classy">Classy</option>
+                <option value="classy-rounded">Classy Rounded</option>
+                <option value="square">Square</option>
+                <option value="extra-rounded">Extra Rounded</option>
+              </select>
+            </div>
+            <div>
+              <label>Eye Outer Frame</label>
+              <select id="corner-sq-style" onchange="updateQR()">
+                <option value="extra-rounded">Extra Rounded</option>
+                <option value="square">Square</option>
+                <option value="dot">Dot</option>
+              </select>
+            </div>
+            <div>
+              <label>Eye Inner Dot</label>
+              <select id="corner-dot-style" onchange="updateQR()">
+                <option value="dot">Dot</option>
+                <option value="square">Square</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ACCORDION 4: COLOR PALETTE -->
+      <details class="accordion">
+        <summary><i class="fa-solid fa-palette"></i> Colors & Gradients</summary>
+        <div class="accordion-content">
+          <label class="checkbox-row">
+            <input type="checkbox" id="use-gradient" onchange="updateQR()"> Enable Gradient Body 🌈
+          </label>
+
+          <div class="row-grid">
+            <div>
+              <label>Primary Color</label>
+              <div class="color-picker-wrapper">
+                <input type="color" id="fg-color" value="#0b0f19" onchange="updateQR()">
+                <span style="font-size:12px;" id="fg-color-hex">#0B0F19</span>
+              </div>
+            </div>
+            <div id="grad-c2-box" class="hidden">
+              <label>Gradient Color 2</label>
+              <div class="color-picker-wrapper">
+                <input type="color" id="fg-color-2" value="#38bdf8" onchange="updateQR()">
+              </div>
+            </div>
+            <div>
+              <label>Eye Outer</label>
+              <div class="color-picker-wrapper">
+                <input type="color" id="eye-outer-color" value="#0b0f19" onchange="updateQR()">
+              </div>
+            </div>
+            <div>
+              <label>Eye Inner</label>
+              <div class="color-picker-wrapper">
+                <input type="color" id="eye-inner-color" value="#0b0f19" onchange="updateQR()">
+              </div>
+            </div>
+          </div>
+
+          <div class="row-grid" style="margin-top:12px;">
+            <div>
+              <label>Background Color</label>
+              <div class="color-picker-wrapper">
+                <input type="color" id="bg-color" value="#ffffff" onchange="updateQR()">
+              </div>
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+              <label class="checkbox-row">
+                <input type="checkbox" id="transparent-bg" onchange="updateQR()"> Transparent BG
+              </label>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- ACCORDION 5: LOGOS & CENTER ICONS -->
+      <details class="accordion">
+        <summary><i class="fa-solid fa-icons"></i> Center Logo & Icon</summary>
+        <div class="accordion-content">
+          <label>Built-in Brand Presets</label>
+          <div class="brand-grid">
+            <div class="brand-btn selected" onclick="setBrandIcon('none')"><i class="fa-solid fa-ban"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('instagram')"><i class="fa-brands fa-instagram"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('tiktok')"><i class="fa-brands fa-tiktok"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('youtube')"><i class="fa-brands fa-youtube"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('spotify')"><i class="fa-brands fa-spotify"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('whatsapp')"><i class="fa-brands fa-whatsapp"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('discord')"><i class="fa-brands fa-discord"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('twitter')"><i class="fa-brands fa-x-twitter"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('wifi')"><i class="fa-solid fa-wifi"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('btc')"><i class="fa-brands fa-bitcoin"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('apple')"><i class="fa-brands fa-apple"></i></div>
+            <div class="brand-btn" onclick="setBrandIcon('google')"><i class="fa-brands fa-google"></i></div>
+          </div>
+
+          <label>Or Upload Custom Image Logo</label>
+          <input type="file" id="logo-file" accept="image/*" onchange="handleLogoUpload(event)">
+
+          <label>Logo Size Scale <span class="val-badge" id="logo-size-val">30%</span></label>
+          <input type="range" id="logo-size" min="0.15" max="0.45" step="0.05" value="0.30" oninput="updateQR()">
+        </div>
+      </details>
+
+      <!-- ACCORDION 6: FRAME & BANNER -->
+      <details class="accordion">
+        <summary><i class="fa-solid fa-border-all"></i> Frame & Text Banner</summary>
+        <div class="accordion-content">
+          <div class="row-grid">
+            <div><label>Banner Text</label><input type="text" id="frame-text-input" placeholder="e.g. SCAN ME" value="SCAN ME" oninput="updateQR()"></div>
+            <div>
+              <label>Position</label>
+              <select id="banner-pos" onchange="updateQR()">
+                <option value="bottom">Bottom</option>
+                <option value="top">Top</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row-grid">
+            <div>
+              <label>Frame BG</label>
+              <div class="color-picker-wrapper"><input type="color" id="frame-bg-color" value="#ffffff" onchange="updateQR()"></div>
+            </div>
+            <div>
+              <label>Text Color</label>
+              <div class="color-picker-wrapper"><input type="color" id="banner-color" value="#0b0f19" onchange="updateQR()"></div>
+            </div>
+            <div>
+              <label>Border Color</label>
+              <div class="color-picker-wrapper"><input type="color" id="frame-border-color" value="#38bdf8" onchange="updateQR()"></div>
+            </div>
+          </div>
+
+          <label>Border Thickness <span class="val-badge" id="border-val">0px</span></label>
+          <input type="range" id="frame-border-width" min="0" max="20" value="0" oninput="updateQR()">
+
+          <label>Font Size <span class="val-badge" id="font-size-val">22px</span></label>
+          <input type="range" id="banner-size" min="14" max="40" value="22" oninput="updateQR()">
+        </div>
+      </details>
+
+    </div>
+
+    <!-- BULK GENERATOR TAB -->
+    <div class="panel hidden" id="tab-batch" style="padding:24px;">
+      <h3 style="margin-top:0; color:var(--accent);"><i class="fa-solid fa-layer-group"></i> Bulk QR Code Generator</h3>
+      <p style="color:var(--text-muted); font-size:13px;">Enter multiple URLs or plain text items (one line per QR code). All generated cards will be automatically batch processed.</p>
+      <label>Bulk Inputs List</label>
+      <textarea id="batch-input" style="height:180px;" placeholder="https://google.com&#10;https://youtube.com&#10;https://github.com"></textarea>
+      <button class="btn btn-primary" onclick="runBatchGenerate()"><i class="fa-solid fa-bolt"></i> Generate & Download All</button>
+    </div>
+
+    <!-- SAVED HISTORY TAB -->
+    <div class="panel hidden" id="tab-history" style="padding:24px;">
+      <h3 style="margin-top:0; color:var(--accent);"><i class="fa-solid fa-clock-rotate-left"></i> Preset History</h3>
+      <div id="history-container" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="color:var(--text-muted); font-size:13px;">No saved presets found. Click "Save Preset" under the preview card!</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: STICKY LIVE PREVIEW -->
+  <div class="preview-card">
+    <h3 style="margin:0; color:var(--accent); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;"><i class="fa-solid fa-eye"></i> Live Studio Preview</h3>
+
+    <div id="frame-wrapper">
+      <div id="banner-text-top" class="banner-text hidden">SCAN ME</div>
+      <div id="canvas"></div>
+      <div id="banner-text-bottom" class="banner-text">SCAN ME</div>
+    </div>
+
+    <label>File Name</label>
+    <input type="text" id="file-name" value="gigachad-qr" placeholder="File name">
+
+    <label>Export Quality</label>
+    <select id="export-res">
+      <option value="800">Standard HD (800px)</option>
+      <option value="1600" selected>Print HD (1600px)</option>
+      <option value="3200">4K Ultra HD (3200px)</option>
+    </select>
+
+    <div class="row-grid" style="margin-top:12px;">
+      <button class="btn btn-primary" onclick="download('png')"><i class="fa-solid fa-download"></i> PNG</button>
+      <button class="btn btn-secondary" onclick="download('jpg')">JPG</button>
+      <button class="btn btn-secondary" onclick="download('svg')">SVG</button>
+    </div>
+
+    <button class="btn btn-secondary" style="margin-top:10px;" onclick="saveToHistory()"><i class="fa-solid fa-bookmark"></i> Save Design Preset</button>
+  </div>
+
+</div>
+
+<script>
+  let qrCode;
+  let customLogoData = "";
+
+  const PRESET_LOGOS = {
+    instagram: "https://cdn-icons-png.flaticon.com/512/174/174855.png",
+    tiktok: "https://cdn-icons-png.flaticon.com/512/3046/3046124.png",
+    youtube: "https://cdn-icons-png.flaticon.com/512/1384/1384060.png",
+    spotify: "https://cdn-icons-png.flaticon.com/512/174/174872.png",
+    whatsapp: "https://cdn-icons-png.flaticon.com/512/733/733585.png",
+    discord: "https://cdn-icons-png.flaticon.com/512/5968/5968756.png",
+    twitter: "https://cdn-icons-png.flaticon.com/512/5969/5969020.png",
+    wifi: "https://cdn-icons-png.flaticon.com/512/93/93158.png",
+    btc: "https://cdn-icons-png.flaticon.com/512/5968/5968260.png",
+    apple: "https://cdn-icons-png.flaticon.com/512/0/747.png",
+    google: "https://cdn-icons-png.flaticon.com/512/300/300221.png"
+  };
+
+  window.onload = () => {
+    qrCode = new QRCodeStyling({
+      width: 240,
+      height: 240,
+      data: "https://example.com",
+      dotsOptions: { color: "#0b0f19", type: "rounded" },
+      cornersSquareOptions: { color: "#0b0f19", type: "extra-rounded" },
+      cornersDotOptions: { color: "#0b0f19", type: "dot" },
+      backgroundOptions: { color: "#ffffff" },
+      imageOptions: { hideBackgroundDots: true, imageSize: 0.3, margin: 4 },
+      qrOptions: { errorCorrectionLevel: "H" }
+    });
+
+    qrCode.append(document.getElementById("canvas"));
+    updateQR();
+    renderHistory();
+  };
+
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-single').classList.add('hidden');
+    document.getElementById('tab-batch').classList.add('hidden');
+    document.getElementById('tab-history').classList.add('hidden');
+
+    if (tabName === 'single') {
+      document.getElementById('tab-single').classList.remove('hidden');
+      event.currentTarget.classList.add('active');
+    } else if (tabName === 'batch') {
+      document.getElementById('tab-batch').classList.remove('hidden');
+      event.currentTarget.classList.add('active');
+    } else if (tabName === 'history') {
+      document.getElementById('tab-history').classList.remove('hidden');
+      event.currentTarget.classList.add('active');
+    }
+  }
+
+  function applyPreset(preset) {
+    if (preset === 'cyberpunk') {
+      setColor('fg-color', '#00ffcc'); setColor('fg-color-2', '#ff007f');
+      document.getElementById('use-gradient').checked = true;
+      setColor('bg-color', '#000000'); setColor('eye-outer-color', '#00ffcc'); setColor('eye-inner-color', '#ff007f');
+      setColor('frame-bg-color', '#000000'); setColor('banner-color', '#00ffcc'); setColor('frame-border-color', '#ff007f');
+      document.getElementById('frame-border-width').value = 4;
+      document.getElementById('dot-style').value = 'classy-rounded';
+    } else if (preset === 'instagram') {
+      setColor('fg-color', '#f09433'); setColor('fg-color-2', '#bc1888');
+      document.getElementById('use-gradient').checked = true;
+      setColor('bg-color', '#ffffff'); setColor('eye-outer-color', '#e6683c'); setColor('eye-inner-color', '#dc2743');
+      setColor('frame-bg-color', '#ffffff'); setColor('banner-color', '#dc2743');
+      document.getElementById('dot-style').value = 'extra-rounded';
+    } else if (preset === 'gold') {
+      setColor('fg-color', '#d4af37'); setColor('fg-color-2', '#f3e5ab');
+      document.getElementById('use-gradient').checked = true;
+      setColor('bg-color', '#111111'); setColor('eye-outer-color', '#d4af37'); setColor('eye-inner-color', '#f3e5ab');
+      setColor('frame-bg-color', '#111111'); setColor('banner-color', '#d4af37');
+      document.getElementById('dot-style').value = 'classy';
+    } else if (preset === 'spotify') {
+      setColor('fg-color', '#1db954'); document.getElementById('use-gradient').checked = false;
+      setColor('bg-color', '#121212'); setColor('eye-outer-color', '#1db954'); setColor('eye-inner-color', '#ffffff');
+      setColor('frame-bg-color', '#121212'); setColor('banner-color', '#1db954');
+      document.getElementById('dot-style').value = 'dots';
+    } else if (preset === 'stealth') {
+      setColor('fg-color', '#334155'); document.getElementById('use-gradient').checked = false;
+      setColor('bg-color', '#0f172a'); setColor('eye-outer-color', '#38bdf8'); setColor('eye-inner-color', '#38bdf8');
+      setColor('frame-bg-color', '#0f172a'); setColor('banner-color', '#f8fafc');
+      document.getElementById('dot-style').value = 'square';
+    } else if (preset === 'neon') {
+      setColor('fg-color', '#ff007f'); setColor('fg-color-2', '#7928ca');
+      document.getElementById('use-gradient').checked = true;
+      setColor('bg-color', '#050505'); setColor('eye-outer-color', '#ff007f'); setColor('eye-inner-color', '#00f0ff');
+      setColor('frame-bg-color', '#050505'); setColor('banner-color', '#ff007f');
+      document.getElementById('dot-style').value = 'rounded';
+    }
+    updateQR();
+  }
+
+  function setColor(id, val) {
+    document.getElementById(id).value = val;
+  }
+
+  function switchType() {
+    const selected = document.getElementById("qr-type").value;
+    ["url", "wifi", "vcard", "whatsapp", "email", "text"].forEach(g => {
+      document.getElementById(`field-${g}`).classList.toggle("hidden", g !== selected);
+    });
+    updateQR();
+  }
+
+  function getPayload() {
+    const type = document.getElementById("qr-type").value;
+    if (type === "url") return document.getElementById("url-val").value || "https://example.com";
+    if (type === "wifi") return `WIFI:S:${document.getElementById("wifi-ssid").value || "WiFi"};T:${document.getElementById("wifi-type").value};P:${document.getElementById("wifi-pass").value || ""};;`;
+    if (type === "vcard") return `BEGIN:VCARD\nVERSION:3.0\nN:${document.getElementById("vc-ln").value};${document.getElementById("vc-fn").value}\nTEL:${document.getElementById("vc-tel").value}\nEND:VCARD`;
+    if (type === "whatsapp") return `https://wa.me/${document.getElementById("wa-phone").value || "123456789"}?text=${encodeURIComponent(document.getElementById("wa-msg").value || "")}`;
+    if (type === "email") return `mailto:${document.getElementById("em-to").value || ""}?subject=${encodeURIComponent(document.getElementById("em-sub").value || "")}`;
+    if (type === "text") return document.getElementById("txt-val").value || "Sample Text";
+    return "https://example.com";
+  }
+
+  function updateQR() {
+    // Dynamic Badges
+    document.getElementById("logo-size-val").innerText = Math.round(document.getElementById("logo-size").value * 100) + "%";
+    document.getElementById("border-val").innerText = document.getElementById("frame-border-width").value + "px";
+    document.getElementById("font-size-val").innerText = document.getElementById("banner-size").value + "px";
+    document.getElementById("fg-color-hex").innerText = document.getElementById("fg-color").value.toUpperCase();
+
+    const isTransparent = document.getElementById("transparent-bg").checked;
+    const bgColor = isTransparent ? "rgba(0,0,0,0)" : document.getElementById("bg-color").value;
+    const useGrad = document.getElementById("use-gradient").checked;
+    
+    document.getElementById("grad-c2-box").classList.toggle("hidden", !useGrad);
+
+    let dotsOptions = { type: document.getElementById("dot-style").value };
+
+    if (useGrad) {
+      dotsOptions.gradient = {
+        type: "linear",
+        rotation: 45 * (Math.PI / 180),
+        colorStops: [
+          { offset: 0, color: document.getElementById("fg-color").value },
+          { offset: 1, color: document.getElementById("fg-color-2").value }
+        ]
+      };
+    } else {
+      dotsOptions.color = document.getElementById("fg-color").value;
+    }
+
+    // Frame styling
+    const frameBg = isTransparent ? "transparent" : document.getElementById("frame-bg-color").value;
+    const wrapper = document.getElementById("frame-wrapper");
+    wrapper.style.backgroundColor = frameBg;
+    wrapper.style.borderColor = document.getElementById("frame-border-color").value;
+    wrapper.style.borderWidth = (document.getElementById("frame-border-width").value || 0) + "px";
+    wrapper.style.borderStyle = "solid";
+
+    // Banner Text
+    const bannerTxt = document.getElementById("frame-text-input").value;
+    const bannerPos = document.getElementById("banner-pos").value;
+    const topBanner = document.getElementById("banner-text-top");
+    const bottomBanner = document.getElementById("banner-text-bottom");
+    const bannerColor = document.getElementById("banner-color").value;
+    const bannerSize = (document.getElementById("banner-size").value || 22) + "px";
+
+    topBanner.style.color = bannerColor;
+    bottomBanner.style.color = bannerColor;
+    topBanner.style.fontSize = bannerSize;
+    bottomBanner.style.fontSize = bannerSize;
+
+    topBanner.classList.add("hidden");
+    bottomBanner.classList.add("hidden");
+
+    if (bannerTxt.trim()) {
+      if (bannerPos === "top") {
+        topBanner.innerText = bannerTxt;
+        topBanner.classList.remove("hidden");
+      } else {
+        bottomBanner.innerText = bannerTxt;
+        bottomBanner.classList.remove("hidden");
+      }
+    }
+
+    qrCode.update({
+      data: getPayload(),
+      dotsOptions: dotsOptions,
+      cornersSquareOptions: { color: document.getElementById("eye-outer-color").value, type: document.getElementById("corner-sq-style").value },
+      cornersDotOptions: { color: document.getElementById("eye-inner-color").value, type: document.getElementById("corner-dot-style").value },
+      backgroundOptions: { color: bgColor },
+      image: customLogoData,
+      imageOptions: { hideBackgroundDots: true, imageSize: parseFloat(document.getElementById("logo-size").value), margin: 4 }
+    });
+  }
+
+  function setBrandIcon(key) {
+    document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+    customLogoData = PRESET_LOGOS[key] || "";
+    updateQR();
+  }
+
+  function handleLogoUpload(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        customLogoData = event.target.result;
+        updateQR();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function download(ext) {
+    const fileName = document.getElementById("file-name").value.trim() || "gigachad-qr";
+    if (ext === 'svg') {
+      qrCode.download({ name: fileName, extension: 'svg' });
+      return;
+    }
+    const wrapper = document.getElementById("frame-wrapper");
+    const targetRes = parseInt(document.getElementById("export-res").value) || 1600;
+    const scale = targetRes / wrapper.offsetWidth;
+
+    const canvas = await html2canvas(wrapper, { scale: scale, backgroundColor: null, useCORS: true });
+    const link = document.createElement('a');
+    link.download = `${fileName}.${ext}`;
+    link.href = canvas.toDataURL(`image/${ext === 'jpg' ? 'jpeg' : 'png'}`);
+    link.click();
+  }
+
+  async function runBatchGenerate() {
+    const raw = document.getElementById("batch-input").value.trim();
+    if (!raw) return alert("Please enter links!");
+
+    const lines = raw.split('\n').filter(l => l.trim() !== "");
+    for (let i = 0; i < lines.length; i++) {
+      qrCode.update({ data: lines[i].trim() });
+      await new Promise(r => setTimeout(r, 250));
+      const wrapper = document.getElementById("frame-wrapper");
+      const canvas = await html2canvas(wrapper, { scale: 2, backgroundColor: null, useCORS: true });
+      const link = document.createElement('a');
+      link.download = `batch-qr-${i + 1}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  }
+
+  function saveToHistory() {
+    const history = JSON.parse(localStorage.getItem('qr_history') || '[]');
+    const payload = getPayload();
+    const name = document.getElementById("file-name").value || "Preset QR";
+    history.unshift({ name, payload, date: new Date().toLocaleDateString() });
+    localStorage.setItem('qr_history', JSON.stringify(history.slice(0, 10)));
+    renderHistory();
+    alert("Saved design preset to history!");
+  }
+
+  function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('qr_history') || '[]');
+    const container = document.getElementById('history-container');
+    if (!history.length) return;
+    container.innerHTML = history.map(item => `
+      <div style="background:#0b0f19; padding:12px; border-radius:10px; border:1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong style="font-size:14px;">${item.name}</strong> <br>
+          <small style="color:var(--text-muted);">${item.payload.substring(0, 28)}...</small>
+        </div>
+        <button class="btn btn-secondary" style="width:auto; margin:0; padding:6px 12px;" onclick="loadHistoryItem('${item.payload}')">Load</button>
+      </div>
+    `).join('');
+  }
+
+  function loadHistoryItem(payload) {
+    document.getElementById('qr-type').value = 'url';
+    switchType();
+    document.getElementById('url-val').value = payload;
+    updateQR();
+    switchTab('single');
+  }
+</script>
+
+</body>
+</html>

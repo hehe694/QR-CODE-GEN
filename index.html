@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GigaChad QR Studio v4.6 🧀👑</title>
+  <title>GigaChad QR Studio v4.7 🧀👑</title>
   <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -104,15 +104,19 @@
 
 <div class="app-container">
 
+  <!-- LEFT: CONTROL CENTER -->
   <div>
+    <!-- Navigation Tabs -->
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('single')"><i class="fa-solid fa-sliders"></i> Design Studio</button>
       <button class="tab-btn" onclick="switchTab('batch')"><i class="fa-solid fa-layer-group"></i> Bulk Mode</button>
       <button class="tab-btn" onclick="switchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i> History</button>
     </div>
 
+    <!-- MAIN STUDIO PANEL -->
     <div class="panel" id="tab-single">
       
+      <!-- ACCORDION 1: PRESET THEMES -->
       <details class="accordion" open>
         <summary><i class="fa-solid fa-wand-magic-sparkles"></i> 1-Click Themes</summary>
         <div class="accordion-content">
@@ -127,6 +131,7 @@
         </div>
       </details>
 
+      <!-- ACCORDION 2: PAYLOAD CONTENT -->
       <details class="accordion" open>
         <summary><i class="fa-solid fa-link"></i> Content & Data</summary>
         <div class="accordion-content">
@@ -142,46 +147,47 @@
 
           <div id="field-url">
             <label>Target URL</label>
-            <input type="url" id="url-val" placeholder="https://example.com" value="https://example.com" oninput="updateQR()">
+            <input type="url" id="url-val" placeholder="https://example.com" value="https://example.com" oninput="debouncedUpdateQR()">
           </div>
 
           <div id="field-text" class="hidden">
             <label>Scan Behavior</label>
             <select id="txt-format" onchange="updateQR()">
-              <option value="data">📄 Direct Browser View (No Google Search!)</option>
+              <option value="data">📄 Direct Browser View (Fast HTML)</option>
               <option value="raw">📝 Raw Clipboard Text</option>
             </select>
             <label>Text Payload</label>
-            <textarea id="txt-val" placeholder="Type text here..." oninput="updateQR()"></textarea>
+            <textarea id="txt-val" placeholder="Type text here..." oninput="debouncedUpdateQR()"></textarea>
           </div>
 
           <div id="field-wifi" class="hidden">
-            <label>Network Name (SSID)</label><input type="text" id="wifi-ssid" placeholder="MyWiFi" oninput="updateQR()">
-            <label>Password</label><input type="password" id="wifi-pass" placeholder="SecretPass" oninput="updateQR()">
+            <label>Network Name (SSID)</label><input type="text" id="wifi-ssid" placeholder="MyWiFi" oninput="debouncedUpdateQR()">
+            <label>Password</label><input type="password" id="wifi-pass" placeholder="SecretPass" oninput="debouncedUpdateQR()">
             <label>Security Type</label>
             <select id="wifi-type" onchange="updateQR()"><option value="WPA">WPA/WPA2/WPA3</option><option value="WEP">WEP</option><option value="nopass">None</option></select>
           </div>
 
           <div id="field-vcard" class="hidden">
             <div class="row-grid">
-              <div><label>First Name</label><input type="text" id="vc-fn" placeholder="Chad" oninput="updateQR()"></div>
-              <div><label>Last Name</label><input type="text" id="vc-ln" placeholder="Giga" oninput="updateQR()"></div>
+              <div><label>First Name</label><input type="text" id="vc-fn" placeholder="Chad" oninput="debouncedUpdateQR()"></div>
+              <div><label>Last Name</label><input type="text" id="vc-ln" placeholder="Giga" oninput="debouncedUpdateQR()"></div>
             </div>
-            <label>Phone Number</label><input type="tel" id="vc-tel" placeholder="+123456789" oninput="updateQR()">
+            <label>Phone Number</label><input type="tel" id="vc-tel" placeholder="+123456789" oninput="debouncedUpdateQR()">
           </div>
 
           <div id="field-whatsapp" class="hidden">
-            <label>Phone Number (With Country Code)</label><input type="tel" id="wa-phone" placeholder="15551234567" oninput="updateQR()">
-            <label>Message</label><input type="text" id="wa-msg" placeholder="Hey!" oninput="updateQR()">
+            <label>Phone Number (With Country Code)</label><input type="tel" id="wa-phone" placeholder="15551234567" oninput="debouncedUpdateQR()">
+            <label>Message</label><input type="text" id="wa-msg" placeholder="Hey!" oninput="debouncedUpdateQR()">
           </div>
 
           <div id="field-email" class="hidden">
-            <label>Recipient Email</label><input type="email" id="em-to" placeholder="chad@example.com" oninput="updateQR()">
-            <label>Subject</label><input type="text" id="em-sub" placeholder="Inquiry" oninput="updateQR()">
+            <label>Recipient Email</label><input type="email" id="em-to" placeholder="chad@example.com" oninput="debouncedUpdateQR()">
+            <label>Subject</label><input type="text" id="em-sub" placeholder="Inquiry" oninput="debouncedUpdateQR()">
           </div>
         </div>
       </details>
 
+      <!-- ACCORDION 3: GEOMETRY & STYLES -->
       <details class="accordion">
         <summary><i class="fa-solid fa-shapes"></i> QR Dots & Corner Eyes</summary>
         <div class="accordion-content">
@@ -216,6 +222,7 @@
         </div>
       </details>
 
+      <!-- ACCORDION 4: COLOR PALETTE -->
       <details class="accordion">
         <summary><i class="fa-solid fa-palette"></i> Colors & Gradients</summary>
         <div class="accordion-content">
@@ -267,6 +274,7 @@
         </div>
       </details>
 
+      <!-- ACCORDION 5: LOGOS & CENTER ICONS -->
       <details class="accordion">
         <summary><i class="fa-solid fa-icons"></i> Center Logo & Icon</summary>
         <div class="accordion-content">
@@ -294,11 +302,12 @@
         </div>
       </details>
 
+      <!-- ACCORDION 6: FRAME & BANNER -->
       <details class="accordion">
         <summary><i class="fa-solid fa-border-all"></i> Frame & Text Banner</summary>
         <div class="accordion-content">
           <div class="row-grid">
-            <div><label>Banner Text</label><input type="text" id="frame-text-input" placeholder="e.g. SCAN ME" value="SCAN ME" oninput="updateQR()"></div>
+            <div><label>Banner Text</label><input type="text" id="frame-text-input" placeholder="e.g. SCAN ME" value="SCAN ME" oninput="debouncedUpdateQR()"></div>
             <div>
               <label>Position</label>
               <select id="banner-pos" onchange="updateQR()">
@@ -333,6 +342,7 @@
 
     </div>
 
+    <!-- BULK GENERATOR TAB -->
     <div class="panel hidden" id="tab-batch" style="padding:24px;">
       <h3 style="margin-top:0; color:var(--accent);"><i class="fa-solid fa-layer-group"></i> Bulk QR Code Generator</h3>
       <p style="color:var(--text-muted); font-size:13px;">Enter multiple URLs or plain text items (one line per QR code). All generated cards will be automatically batch processed.</p>
@@ -341,6 +351,7 @@
       <button class="btn btn-primary" onclick="runBatchGenerate()"><i class="fa-solid fa-bolt"></i> Generate & Download All</button>
     </div>
 
+    <!-- SAVED HISTORY TAB -->
     <div class="panel hidden" id="tab-history" style="padding:24px;">
       <h3 style="margin-top:0; color:var(--accent);"><i class="fa-solid fa-clock-rotate-left"></i> Preset History</h3>
       <div id="history-container" style="display:flex; flex-direction:column; gap:8px;">
@@ -350,6 +361,7 @@
 
   </div>
 
+  <!-- RIGHT: STICKY LIVE PREVIEW -->
   <div class="preview-card">
     <h3 style="margin:0; color:var(--accent); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;"><i class="fa-solid fa-eye"></i> Live Studio Preview</h3>
 
@@ -383,6 +395,7 @@
 <script>
   let qrCode;
   let customLogoData = "";
+  let qrDebounceTimer;
 
   const PRESET_LOGOS = {
     instagram: "https://cdn-icons-png.flaticon.com/512/174/174855.png",
@@ -415,6 +428,11 @@
     updateQR();
     renderHistory();
   };
+
+  function debouncedUpdateQR() {
+    clearTimeout(qrDebounceTimer);
+    qrDebounceTimer = setTimeout(updateQR, 120);
+  }
 
   function switchTab(tabName) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -496,8 +514,8 @@
       
       if (mode === "data") {
         const safeTxt = txt.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
-        const htmlPage = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Text Reader</title></head><body style="font-family:-apple-system,sans-serif;padding:24px;background:#090d16;color:#f3f4f6;font-size:20px;line-height:1.5;"><div style="background:#111827;padding:20px;border-radius:12px;border:1px solid #38bdf8;word-break:break-word;">${safeTxt}</div></body></html>`;
-        return "data:text/html;charset=utf-8," + encodeURIComponent(htmlPage);
+        const minHtml = `<meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#090d16;color:#f3f4f6;font-family:sans-serif;padding:16px"><div style="background:#111827;padding:16px;border-radius:10px;border:1px solid #38bdf8;word-break:break-word">${safeTxt}</div>`;
+        return "data:text/html," + encodeURIComponent(minHtml);
       }
       return txt;
     }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GigaChad QR Studio v4.0 🧀👑</title>
+  <title>GigaChad QR Studio v4.5 🧀👑</title>
   <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -138,16 +138,26 @@
           <label>Type</label>
           <select id="qr-type" onchange="switchType()">
             <option value="url">🔗 Website URL / Link</option>
+            <option value="text">📝 Raw Text / Message</option>
             <option value="wifi">📶 Wi-Fi Access Point</option>
             <option value="vcard">🎴 Digital Contact (vCard)</option>
             <option value="whatsapp">💬 WhatsApp Direct Link</option>
             <option value="email">✉️ E-mail Draft</option>
-            <option value="text">📝 Raw Text</option>
           </select>
 
           <div id="field-url">
             <label>Target URL</label>
             <input type="url" id="url-val" placeholder="https://example.com" value="https://example.com" oninput="updateQR()">
+          </div>
+
+          <div id="field-text" class="hidden">
+            <label>Scan Behavior</label>
+            <select id="txt-format" onchange="updateQR()">
+              <option value="data">📄 Instant Display Page (No Web Search!)</option>
+              <option value="raw">📝 Raw Unformatted Text</option>
+            </select>
+            <label>Text Payload</label>
+            <textarea id="txt-val" placeholder="Type text here..." oninput="updateQR()"></textarea>
           </div>
 
           <div id="field-wifi" class="hidden">
@@ -173,10 +183,6 @@
           <div id="field-email" class="hidden">
             <label>Recipient Email</label><input type="email" id="em-to" placeholder="chad@example.com" oninput="updateQR()">
             <label>Subject</label><input type="text" id="em-sub" placeholder="Inquiry" oninput="updateQR()">
-          </div>
-
-          <div id="field-text" class="hidden">
-            <label>Text Payload</label><textarea id="txt-val" placeholder="Type text here..." oninput="updateQR()"></textarea>
           </div>
         </div>
       </details>
@@ -221,7 +227,7 @@
         <summary><i class="fa-solid fa-palette"></i> Colors & Gradients</summary>
         <div class="accordion-content">
           <label class="checkbox-row">
-            <input type="checkbox" id="use-gradient" onchange="updateQR()"> Enable Gradient Body 🌈
+            <input type="checkbox" id="use-gradient" onchange="updateQR()"> Enable Gradient Body rainbow
           </label>
 
           <div class="row-grid">
@@ -486,7 +492,7 @@
 
   function switchType() {
     const selected = document.getElementById("qr-type").value;
-    ["url", "wifi", "vcard", "whatsapp", "email", "text"].forEach(g => {
+    ["url", "text", "wifi", "vcard", "whatsapp", "email"].forEach(g => {
       document.getElementById(`field-${g}`).classList.toggle("hidden", g !== selected);
     });
     updateQR();
@@ -495,16 +501,25 @@
   function getPayload() {
     const type = document.getElementById("qr-type").value;
     if (type === "url") return document.getElementById("url-val").value || "https://example.com";
+    
+    if (type === "text") {
+      const txt = document.getElementById("txt-val").value || "Sample Text";
+      const mode = document.getElementById("txt-format").value;
+      if (mode === "data") {
+        return "data:text/plain;charset=utf-8," + encodeURIComponent(txt);
+      }
+      return txt;
+    }
+
     if (type === "wifi") return `WIFI:S:${document.getElementById("wifi-ssid").value || "WiFi"};T:${document.getElementById("wifi-type").value};P:${document.getElementById("wifi-pass").value || ""};;`;
     if (type === "vcard") return `BEGIN:VCARD\nVERSION:3.0\nN:${document.getElementById("vc-ln").value};${document.getElementById("vc-fn").value}\nTEL:${document.getElementById("vc-tel").value}\nEND:VCARD`;
     if (type === "whatsapp") return `https://wa.me/${document.getElementById("wa-phone").value || "123456789"}?text=${encodeURIComponent(document.getElementById("wa-msg").value || "")}`;
     if (type === "email") return `mailto:${document.getElementById("em-to").value || ""}?subject=${encodeURIComponent(document.getElementById("em-sub").value || "")}`;
-    if (type === "text") return document.getElementById("txt-val").value || "Sample Text";
+    
     return "https://example.com";
   }
 
   function updateQR() {
-    // Dynamic Badges
     document.getElementById("logo-size-val").innerText = Math.round(document.getElementById("logo-size").value * 100) + "%";
     document.getElementById("border-val").innerText = document.getElementById("frame-border-width").value + "px";
     document.getElementById("font-size-val").innerText = document.getElementById("banner-size").value + "px";
@@ -531,7 +546,6 @@
       dotsOptions.color = document.getElementById("fg-color").value;
     }
 
-    // Frame styling
     const frameBg = isTransparent ? "transparent" : document.getElementById("frame-bg-color").value;
     const wrapper = document.getElementById("frame-wrapper");
     wrapper.style.backgroundColor = frameBg;
@@ -539,7 +553,6 @@
     wrapper.style.borderWidth = (document.getElementById("frame-border-width").value || 0) + "px";
     wrapper.style.borderStyle = "solid";
 
-    // Banner Text
     const bannerTxt = document.getElementById("frame-text-input").value;
     const bannerPos = document.getElementById("banner-pos").value;
     const topBanner = document.getElementById("banner-text-top");

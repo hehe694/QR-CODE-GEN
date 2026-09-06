@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GigaChad QR Studio v4.7 🧀👑</title>
+  <title>GigaChad QR Studio v4.0 🧀👑</title>
   <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -138,51 +138,45 @@
           <label>Type</label>
           <select id="qr-type" onchange="switchType()">
             <option value="url">🔗 Website URL / Link</option>
-            <option value="text">📝 Raw Text / Message</option>
             <option value="wifi">📶 Wi-Fi Access Point</option>
             <option value="vcard">🎴 Digital Contact (vCard)</option>
             <option value="whatsapp">💬 WhatsApp Direct Link</option>
             <option value="email">✉️ E-mail Draft</option>
+            <option value="text">📝 Raw Text</option>
           </select>
 
           <div id="field-url">
             <label>Target URL</label>
-            <input type="url" id="url-val" placeholder="https://example.com" value="https://example.com" oninput="debouncedUpdateQR()">
-          </div>
-
-          <div id="field-text" class="hidden">
-            <label>Scan Behavior</label>
-            <select id="txt-format" onchange="updateQR()">
-              <option value="data">📄 Direct Browser View (Fast HTML)</option>
-              <option value="raw">📝 Raw Clipboard Text</option>
-            </select>
-            <label>Text Payload</label>
-            <textarea id="txt-val" placeholder="Type text here..." oninput="debouncedUpdateQR()"></textarea>
+            <input type="url" id="url-val" placeholder="https://example.com" value="https://example.com" oninput="updateQR()">
           </div>
 
           <div id="field-wifi" class="hidden">
-            <label>Network Name (SSID)</label><input type="text" id="wifi-ssid" placeholder="MyWiFi" oninput="debouncedUpdateQR()">
-            <label>Password</label><input type="password" id="wifi-pass" placeholder="SecretPass" oninput="debouncedUpdateQR()">
+            <label>Network Name (SSID)</label><input type="text" id="wifi-ssid" placeholder="MyWiFi" oninput="updateQR()">
+            <label>Password</label><input type="password" id="wifi-pass" placeholder="SecretPass" oninput="updateQR()">
             <label>Security Type</label>
             <select id="wifi-type" onchange="updateQR()"><option value="WPA">WPA/WPA2/WPA3</option><option value="WEP">WEP</option><option value="nopass">None</option></select>
           </div>
 
           <div id="field-vcard" class="hidden">
             <div class="row-grid">
-              <div><label>First Name</label><input type="text" id="vc-fn" placeholder="Chad" oninput="debouncedUpdateQR()"></div>
-              <div><label>Last Name</label><input type="text" id="vc-ln" placeholder="Giga" oninput="debouncedUpdateQR()"></div>
+              <div><label>First Name</label><input type="text" id="vc-fn" placeholder="Chad" oninput="updateQR()"></div>
+              <div><label>Last Name</label><input type="text" id="vc-ln" placeholder="Giga" oninput="updateQR()"></div>
             </div>
-            <label>Phone Number</label><input type="tel" id="vc-tel" placeholder="+123456789" oninput="debouncedUpdateQR()">
+            <label>Phone Number</label><input type="tel" id="vc-tel" placeholder="+123456789" oninput="updateQR()">
           </div>
 
           <div id="field-whatsapp" class="hidden">
-            <label>Phone Number (With Country Code)</label><input type="tel" id="wa-phone" placeholder="15551234567" oninput="debouncedUpdateQR()">
-            <label>Message</label><input type="text" id="wa-msg" placeholder="Hey!" oninput="debouncedUpdateQR()">
+            <label>Phone Number (With Country Code)</label><input type="tel" id="wa-phone" placeholder="15551234567" oninput="updateQR()">
+            <label>Message</label><input type="text" id="wa-msg" placeholder="Hey!" oninput="updateQR()">
           </div>
 
           <div id="field-email" class="hidden">
-            <label>Recipient Email</label><input type="email" id="em-to" placeholder="chad@example.com" oninput="debouncedUpdateQR()">
-            <label>Subject</label><input type="text" id="em-sub" placeholder="Inquiry" oninput="debouncedUpdateQR()">
+            <label>Recipient Email</label><input type="email" id="em-to" placeholder="chad@example.com" oninput="updateQR()">
+            <label>Subject</label><input type="text" id="em-sub" placeholder="Inquiry" oninput="updateQR()">
+          </div>
+
+          <div id="field-text" class="hidden">
+            <label>Text Payload</label><textarea id="txt-val" placeholder="Type text here..." oninput="updateQR()"></textarea>
           </div>
         </div>
       </details>
@@ -307,7 +301,7 @@
         <summary><i class="fa-solid fa-border-all"></i> Frame & Text Banner</summary>
         <div class="accordion-content">
           <div class="row-grid">
-            <div><label>Banner Text</label><input type="text" id="frame-text-input" placeholder="e.g. SCAN ME" value="SCAN ME" oninput="debouncedUpdateQR()"></div>
+            <div><label>Banner Text</label><input type="text" id="frame-text-input" placeholder="e.g. SCAN ME" value="SCAN ME" oninput="updateQR()"></div>
             <div>
               <label>Position</label>
               <select id="banner-pos" onchange="updateQR()">
@@ -395,7 +389,6 @@
 <script>
   let qrCode;
   let customLogoData = "";
-  let qrDebounceTimer;
 
   const PRESET_LOGOS = {
     instagram: "https://cdn-icons-png.flaticon.com/512/174/174855.png",
@@ -428,11 +421,6 @@
     updateQR();
     renderHistory();
   };
-
-  function debouncedUpdateQR() {
-    clearTimeout(qrDebounceTimer);
-    qrDebounceTimer = setTimeout(updateQR, 120);
-  }
 
   function switchTab(tabName) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -498,7 +486,7 @@
 
   function switchType() {
     const selected = document.getElementById("qr-type").value;
-    ["url", "text", "wifi", "vcard", "whatsapp", "email"].forEach(g => {
+    ["url", "wifi", "vcard", "whatsapp", "email", "text"].forEach(g => {
       document.getElementById(`field-${g}`).classList.toggle("hidden", g !== selected);
     });
     updateQR();
@@ -507,28 +495,16 @@
   function getPayload() {
     const type = document.getElementById("qr-type").value;
     if (type === "url") return document.getElementById("url-val").value || "https://example.com";
-    
-    if (type === "text") {
-      const txt = document.getElementById("txt-val").value || "Sample Text";
-      const mode = document.getElementById("txt-format").value;
-      
-      if (mode === "data") {
-        const safeTxt = txt.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
-        const minHtml = `<meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#090d16;color:#f3f4f6;font-family:sans-serif;padding:16px"><div style="background:#111827;padding:16px;border-radius:10px;border:1px solid #38bdf8;word-break:break-word">${safeTxt}</div>`;
-        return "data:text/html," + encodeURIComponent(minHtml);
-      }
-      return txt;
-    }
-
     if (type === "wifi") return `WIFI:S:${document.getElementById("wifi-ssid").value || "WiFi"};T:${document.getElementById("wifi-type").value};P:${document.getElementById("wifi-pass").value || ""};;`;
     if (type === "vcard") return `BEGIN:VCARD\nVERSION:3.0\nN:${document.getElementById("vc-ln").value};${document.getElementById("vc-fn").value}\nTEL:${document.getElementById("vc-tel").value}\nEND:VCARD`;
     if (type === "whatsapp") return `https://wa.me/${document.getElementById("wa-phone").value || "123456789"}?text=${encodeURIComponent(document.getElementById("wa-msg").value || "")}`;
     if (type === "email") return `mailto:${document.getElementById("em-to").value || ""}?subject=${encodeURIComponent(document.getElementById("em-sub").value || "")}`;
-    
+    if (type === "text") return document.getElementById("txt-val").value || "Sample Text";
     return "https://example.com";
   }
 
   function updateQR() {
+    // Dynamic Badges
     document.getElementById("logo-size-val").innerText = Math.round(document.getElementById("logo-size").value * 100) + "%";
     document.getElementById("border-val").innerText = document.getElementById("frame-border-width").value + "px";
     document.getElementById("font-size-val").innerText = document.getElementById("banner-size").value + "px";
@@ -555,6 +531,7 @@
       dotsOptions.color = document.getElementById("fg-color").value;
     }
 
+    // Frame styling
     const frameBg = isTransparent ? "transparent" : document.getElementById("frame-bg-color").value;
     const wrapper = document.getElementById("frame-wrapper");
     wrapper.style.backgroundColor = frameBg;
@@ -562,6 +539,7 @@
     wrapper.style.borderWidth = (document.getElementById("frame-border-width").value || 0) + "px";
     wrapper.style.borderStyle = "solid";
 
+    // Banner Text
     const bannerTxt = document.getElementById("frame-text-input").value;
     const bannerPos = document.getElementById("banner-pos").value;
     const topBanner = document.getElementById("banner-text-top");
